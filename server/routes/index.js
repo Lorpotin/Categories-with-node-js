@@ -1,5 +1,7 @@
 // ./routes/index.js
-const users = require('./categories');
+const categories = require('./categories');
+const item = require('./item');
 module.exports = app => {
-    app.use('/api/categories', users);
+    app.use('/api/categories', categories);
+    app.use('/api/item', item);
 }

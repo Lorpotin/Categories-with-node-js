@@ -5,39 +5,75 @@ import ReactDOM from 'react-dom';
 import 'antd/dist/antd.dark.css';
 import './index.css';
 import { Tree } from 'antd';
+import { Spin } from 'antd';
+import Item from './Item';
 
 class App extends React.Component {
 
     constructor() {
         super();
         this.state = {
-			data: null
+            loading: false,
+            categories: [],
+            items: []
         }
-        this.getData = this.getData.bind(this);
+        this.getCategories = this.getCategories.bind(this);
+        this.getItems = this.getItems.bind(this);
     }
 
     componentDidMount() {   
-        this.getData();
+        this.getCategories();
     }
 
-    getData() {
-        axios.get('http://localhost:8080/api/categories/allCategories')
-        .then((response) => {
-            console.log(response.data);
-            this.setState({ data: response.data})
-        })
-        .catch((error) => {
-            console.log(error);
+    getItems(treeId) {
+        this.setState({ loading: true }, () => {
+            axios.get(`http://localhost:8080/api/categories/subCategory/${treeId}`)
+            .then((response) => {
+                console.log(response.data);
+                this.setState({ items: response.data, loading: false})
+            })
+            .catch((error) => {
+                console.log(error);
+            });
         });
+    }
+
+    getCategories() {
+        this.setState({ loading: true }, () => {
+            axios.get('http://localhost:8080/api/categories/allCategories')
+            .then((response) => {
+                this.setState({ categories: response.data, loading: false})
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+        });
+    }
+
+    onSelect = (e) => {
+        this.getItems(e);
     }
 
     render() {
         return (
-            <Tree
-                treeData={this.state.data}
-            />
+            <>
+                 <Tree
+                    onSelect={this.onSelect}
+                    treeData={this.state.categories}
+                />
+                {this.state.loading ? 
+                    <Spin size="large" />
+                : 
+                    this.state.items <= 0 ?
+                        <h1>No items in this category!</h1>
+                    : this.state.items.map((item => (
+                        <Item item={item}></Item>
+                    )))
+                }
+            </>
         );
     }
 }
+
 
 export default App;

@@ -1,8 +1,6 @@
 const Router = require('express-promise-router');
 const db = require('../db');
-// create a new express-promise-router
-// this has the same API as the normal express router except
-// it allows you to use async functions as route handlers
+
 const router = new Router();
 // export our router to be mounted by the parent application
 module.exports = router;
@@ -14,8 +12,14 @@ router.get('/subCategory/:id', async (req, res) => {
             UNION
         SELECT s2.id, s2.title, s2.parent_id
         FROM category s2, nodes s1 WHERE s2.parent_id = s1.id)
-    SELECT * FROM nodes;`, [id]);
-    res.send(rows);
+    SELECT id FROM nodes;`, [id]);
+
+    let flatRows = rows.map(item => item.id);
+
+    let data = await db.query(`SELECT * FROM ITEM
+    WHERE category_id = ANY($1)`, [flatRows]);
+
+    res.send(data.rows);
 })
 
 router.get('/allCategories', async (req, res) => {
