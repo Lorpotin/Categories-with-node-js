@@ -4,16 +4,18 @@ import './App.css';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.dark.css';
 import './index.css';
+import { Card, Col } from 'antd';
 
 class Item extends React.Component {
   
     render() {
         return (
-            <div>
-                <h1>{this.props.item.name}</h1>
-                <h3>{this.props.item.description}</h3>
-                <h6>{this.props.item.category_id}</h6>
-            </div>
+            <Col span={6}>
+                <Card title={this.props.item.name} extra={<a href="#">More</a>}>
+                    <p>{this.props.item.description}</p>
+                    <p>ID: {this.props.item.category_id}</p>
+                </Card>
+            </Col>
         )
     }
 }

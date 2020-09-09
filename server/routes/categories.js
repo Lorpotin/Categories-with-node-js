@@ -6,26 +6,46 @@ const router = new Router();
 module.exports = router;
 router.get('/subCategory/:id', async (req, res) => {
     const { id } = req.params;
-    const { rows } = await db.query(`WITH RECURSIVE nodes(id,title,parent_id) AS
-    (SELECT s1.id, s1.title, s1.parent_id
+    console.log(id);
+    const { rows } = await db.query(`WITH RECURSIVE nodes(id, parent_id) AS
+    (SELECT s1.id, s1.parent_id
         FROM category s1 WHERE parent_id = $1
             UNION
-        SELECT s2.id, s2.title, s2.parent_id
+        SELECT s2.id, s2.parent_id
         FROM category s2, nodes s1 WHERE s2.parent_id = s1.id)
     SELECT id FROM nodes;`, [id]);
 
     let flatRows = rows.map(item => item.id);
+    console.log(flatRows);
 
     let data = await db.query(`SELECT * FROM ITEM
     WHERE category_id = ANY($1)`, [flatRows]);
 
+    console.log(data.rows);
+
     res.send(data.rows);
+})
+
+router.get('/categoryBreadcrumb/:id', async(req, res) => {
+    const { id } = req.params;
+    const { rows } = await db.query(`WITH RECURSIVE nodes(id,title,parent_id, path) AS
+    (SELECT s1.id, s1.title, s1.parent_id, s1.title::TEXT as path
+        FROM category s1 WHERE parent_id IS NULL
+            UNION
+        SELECT s2.id, s2.title, s2.parent_id, (s1.path || ',' || s2.title::TEXT)
+        FROM category s2, nodes s1 WHERE s2.parent_id = s1.id)
+    SELECT path FROM nodes WHERE nodes.id = $1`, [id]);
+    const array = rows[0].path.split(',');
+    res.send(array);
 })
 
 router.get('/allCategories', async (req, res) => {
     const { id } = req.params;
     const { rows } = await db.query(`SELECT * FROM category`);
     var treeData = createDataTree(rows);
+
+    console.log(rows);
+    console.log(treeData);
     res.send(treeData);
 })
 

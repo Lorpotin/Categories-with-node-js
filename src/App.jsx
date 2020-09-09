@@ -5,8 +5,10 @@ import ReactDOM from 'react-dom';
 import 'antd/dist/antd.dark.css';
 import './index.css';
 import { Tree } from 'antd';
-import { Spin } from 'antd';
+import { Spin, Row, Breadcrumb } from 'antd';
 import Item from './Item';
+import BreadCrumbItem from './BreadCrumbItem';
+
 
 class App extends React.Component {
 
@@ -15,10 +17,12 @@ class App extends React.Component {
         this.state = {
             loading: false,
             categories: [],
-            items: []
+            items: [],
+            breadcrumbs: [],
         }
         this.getCategories = this.getCategories.bind(this);
         this.getItems = this.getItems.bind(this);
+        this.getBreadcrumb = this.getBreadcrumb.bind(this);
     }
 
     componentDidMount() {   
@@ -37,11 +41,25 @@ class App extends React.Component {
             });
         });
     }
+    // Bundle together with getItems call and return both at the same api call..
+    getBreadcrumb(treeId) {
+        this.setState({ loading: true }, () => {
+            axios.get(`http://localhost:8080/api/categories/categoryBreadcrumb/${treeId}`)
+            .then((response) => {
+                console.log(response.data);
+                this.setState({ breadcrumbs: response.data, loading: false})
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+        });
+    }
 
     getCategories() {
         this.setState({ loading: true }, () => {
             axios.get('http://localhost:8080/api/categories/allCategories')
             .then((response) => {
+                console.log(response.data);
                 this.setState({ categories: response.data, loading: false})
             })
             .catch((error) => {
@@ -51,25 +69,44 @@ class App extends React.Component {
     }
 
     onSelect = (e) => {
-        this.getItems(e);
+        if(e && e.length) {
+            this.getBreadcrumb(e);
+            this.getItems(e);
+        }
+            
     }
 
     render() {
         return (
             <>
-                 <Tree
+                <Tree
                     onSelect={this.onSelect}
                     treeData={this.state.categories}
                 />
+                <Breadcrumb>
+                    { this.state.breadcrumbs <= 0 ?
+                        <p></p>
+                        :
+                        
+                        this.state.breadcrumbs.map((item, i) => (
+                            <BreadCrumbItem key={i} item={item}></BreadCrumbItem>
+                        ))
+                    }
+                </Breadcrumb>
+
+                <div className="site-card-wrapper">
+                    <Row gutter={12}>
                 {this.state.loading ? 
                     <Spin size="large" />
                 : 
                     this.state.items <= 0 ?
-                        <h1>No items in this category!</h1>
-                    : this.state.items.map((item => (
-                        <Item item={item}></Item>
-                    )))
+                        <p></p>
+                    : this.state.items.map((item, i) => (
+                        <Item key={i} item={item}></Item>
+                    ))
                 }
+                    </Row>
+                </div>
             </>
         );
     }
