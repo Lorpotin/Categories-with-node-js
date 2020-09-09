@@ -18,8 +18,16 @@ router.get('/subCategory/:id', async (req, res) => {
     let flatRows = rows.map(item => item.id);
     console.log(flatRows);
 
-    let data = await db.query(`SELECT * FROM ITEM
-    WHERE category_id = ANY($1)`, [flatRows]);
+    let data = [];
+
+    if(flatRows && flatRows.length)
+        data = await db.query(`SELECT * FROM ITEM
+            WHERE category_id = ANY($1)`, [flatRows]);
+    else {
+        data = await db.query(`SELECT * FROM ITEM
+            WHERE category_id = $1`, [id]);
+    }
+    
 
     console.log(data.rows);
 
