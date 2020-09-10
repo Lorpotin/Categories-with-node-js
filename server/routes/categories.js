@@ -19,7 +19,8 @@ router.get('/subCategory/:id', async (req, res) => {
     console.log(flatRows);
 
     let data = [];
-
+    // If we get an ID from front end, and the tree query cant find a node (we are at the end of the leaf)
+    // We can assume that we are looking for a direct match against a single category
     if(flatRows && flatRows.length)
         data = await db.query(`SELECT * FROM ITEM
             WHERE category_id = ANY($1)`, [flatRows]);

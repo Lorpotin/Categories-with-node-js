@@ -30,28 +30,23 @@ class App extends React.Component {
     }
 
     getItems(treeId) {
-        this.setState({ loading: true }, () => {
-            axios.get(`http://localhost:8080/api/categories/subCategory/${treeId}`)
-            .then((response) => {
-                console.log(response.data);
-                this.setState({ items: response.data, loading: false})
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+        return axios.get(`http://localhost:8080/api/categories/subCategory/${treeId}`)
+        .then((response) => {
+            return response.data;
+            
+        })
+        .catch((error) => {
+            console.log(error);
         });
     }
     // Bundle together with getItems call and return both at the same api call..
     getBreadcrumb(treeId) {
-        this.setState({ loading: true }, () => {
-            axios.get(`http://localhost:8080/api/categories/categoryBreadcrumb/${treeId}`)
-            .then((response) => {
-                console.log(response.data);
-                this.setState({ breadcrumbs: response.data, loading: false})
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+        return axios.get(`http://localhost:8080/api/categories/categoryBreadcrumb/${treeId}`)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            console.log(error);
         });
     }
 
@@ -59,7 +54,6 @@ class App extends React.Component {
         this.setState({ loading: true }, () => {
             axios.get('http://localhost:8080/api/categories/allCategories')
             .then((response) => {
-                console.log(response.data);
                 this.setState({ categories: response.data, loading: false})
             })
             .catch((error) => {
@@ -70,10 +64,14 @@ class App extends React.Component {
 
     onSelect = (e) => {
         if(e && e.length) {
-            this.getBreadcrumb(e);
-            this.getItems(e);
+            Promise.all([this.getBreadcrumb(e), this.getItems(e)])
+            .then(([breadcrumbs, items])  => {
+                this.setState({
+                    breadcrumbs,
+                    items
+                });
+            });
         }
-            
     }
 
     render() {
