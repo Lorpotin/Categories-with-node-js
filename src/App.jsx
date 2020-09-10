@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import 'antd/dist/antd.dark.css';
 import './index.css';
 import { Tree } from 'antd';
-import { Spin, Row, Breadcrumb } from 'antd';
+import { Spin, Row, Breadcrumb, Col } from 'antd';
 import Item from './Item';
 import BreadCrumbItem from './BreadCrumbItem';
 
@@ -39,7 +39,6 @@ class App extends React.Component {
             console.log(error);
         });
     }
-    // Bundle together with getItems call and return both at the same api call..
     getBreadcrumb(treeId) {
         return axios.get(`http://localhost:8080/api/categories/categoryBreadcrumb/${treeId}`)
         .then((response) => {
@@ -61,7 +60,7 @@ class App extends React.Component {
             });
         });
     }
-
+    // Get all items and update breadcrumb on category leaf click
     onSelect = (e) => {
         if(e && e.length) {
             Promise.all([this.getBreadcrumb(e), this.getItems(e)])
@@ -98,7 +97,7 @@ class App extends React.Component {
                     <Spin size="large" />
                 : 
                     this.state.items <= 0 ?
-                        <p></p>
+                        <Col span={8}><p>No items found in this category</p></Col>
                     : this.state.items.map((item, i) => (
                         <Item key={i} item={item}></Item>
                     ))

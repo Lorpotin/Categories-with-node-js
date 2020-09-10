@@ -11,7 +11,7 @@ class Item extends React.Component {
     render() {
         return (
             <Col span={6}>
-                <Card title={this.props.item.name} extra={<a href="#">More</a>}>
+                <Card title={this.props.item.name} extra={<a href="/ItemDetails/">More</a>}>
                     <p>{this.props.item.description}</p>
                     <p>ID: {this.props.item.category_id}</p>
                 </Card>
